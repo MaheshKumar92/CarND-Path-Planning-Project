@@ -154,4 +154,102 @@ vector<double> getXY(double s, double d, const vector<double> &maps_s,
   return {x,y};
 }
 
+// get obstacle lane. assuming there are only there lanes with id
+// 0,1,2.
+int get_obstacle_lane(const float d,
+                      const float lane_width){
+    int lane = d/lane_width;
+    if(lane <= 2){
+        return lane;
+    }else{
+        return -1; // invalid for this project, there are only 3 lanes
+    }
+}
+// check obstacles in car lane
+bool check_obstacle_ahead(const int car_lane,
+                          const int obstacle_lane,
+                          const double car_pos,
+                          const double obstacle_pos){
+    // if there is any obstcles within pos_buffer ahead, then returns true.
+    const double pos_buffer = 20;
+    if(car_lane == obstacle_lane){
+        if(obstacle_pos > car_pos){
+            if(obstacle_pos - car_pos < pos_buffer){
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+//check obstacle left side
+bool check_obstacle_left(const int car_lane,
+                         const int obstacle_lane,
+                         const double car_pos,
+                         const double obstacle_pos){
+    // if there is an obstacle which is on left side,
+    // less then 20 meters ahead or less then 5 meters behind returns true.
+    const double pos_buffer = 20;
+    const double pos_buffer_back = 5;
+    if(obstacle_lane - car_lane == -1){
+        double abs_del = abs(car_pos - obstacle_pos);
+        if(abs_del < pos_buffer){
+            if(car_pos > obstacle_pos && abs_del > pos_buffer_back){
+                return false;
+            }
+            return true;
+        }
+    }
+    return false;
+}
+
+// check obstacle right side
+bool check_obstacle_right(const int car_lane,
+                          const int obstacle_lane,
+                          const double car_pos,
+                          const double obstacle_pos){
+    // if there is an obstacle which is on right side,
+    // less then 20 meters ahead or less then 5 meters behind returns true.
+    const double pos_buffer = 20;
+    const double pos_buffer_back = 5 ;
+    if(obstacle_lane - car_lane == 1){
+        double abs_del = abs(car_pos - obstacle_pos);
+        if(abs_del < pos_buffer){
+            if(car_pos > obstacle_pos && abs_del > pos_buffer_back){
+                return false;
+            }
+            return true;
+        }
+    }
+    return false;
+}
+
+// state machine decides which lane to go/follow
+// and what speed difference we should apply.
+void behavior_state_machine(const bool obs_ahead,
+                            const bool obs_left,
+                            const bool obs_right,
+                            //const double ref_vel,
+                            int& lane,
+                            double& del_vel){
+    // acceleration which controls change in velocity.
+    // maximum accelertaion can be 0.224. 0.75 factor is applied here.
+    double del_a = 0.224*0.75;
+    if(obs_ahead == true){
+        if(lane != 0 && obs_left == false){
+            lane-=1; // lane change left
+        }else if(lane != 2 && obs_right == false){
+            lane+=1; // lane change right
+        }else{
+            // lane change is not possible.
+            // so do lane follow and slow down.
+            del_vel-= del_a;
+        }
+    }else{
+        // this means there is no obstacle ahead. So no need to change the lane.
+        // and we can increase the velocity.
+        del_vel+= del_a;
+    }
+}
+
 #endif  // HELPERS_H
