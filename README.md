@@ -74,13 +74,13 @@ A really helpful resource for doing this project and creating smooth trajectorie
 ## Model Documentation (Implemented Solution)
 1. I started with same lane follow (lane id = 1, middle lane) by keeping d (lateral value) constant and incrementing s value with constant rate. This resulted in high jerks at starting/waypoints, collision with other vehicle.
 2. I solved high jerk at starting by gradually increasing the speed according to maximum acceleration.
-3. But at waypoints the jerk was still very high, to solve this, I used spline library as suggested in this project. This library gives you spirals (polynomials, function of s(arc length) which determines angle) between waypoints, which are smooth curves (smoothness depends of degree of spiral). By suing this I was able to solve high jerk problem.
-4. To avoid collision with other vehicle I used data from fusion to detect if there is any obstcle in ego lane. if there is than I decreased the velocity of ego (rate less than maximum allowed acceleration).
+3. But at waypoints the jerk was still very high, to solve this, I used spline library as suggested in this project. This library gives you spirals (polynomials, function of s(arc length) which determines angle) between waypoints, which are smooth curves (smoothness depends of degree of spiral). By using this I was able to solve high jerk problem.
+4. To avoid collision with other vehicle I used data from fusion to detect if there is any obstcle in ego lane. if there is then I decreased the velocity of ego (rate less than maximum allowed acceleration).
 5. But ego was not able to change lane. For that I implemented simple state machine. In this state machine I used only 3 states a) lane follow b) lane change left c) lane change right.
 6. Initialized state machine with lane follow, but if there is an obstacle ahead, then do lane change left if there is a left lane and there is no left obstacle.
-7. if left lane change is not possible then do right lane change if there is a right lane and there is no rigth obstacle.
+7. if left lane change is not possible then do right lane change if there is a right lane and there is no right obstacle.
 8. if non of lane change is possible then stay in lane follow but reduce the speed according to maximum deacceleration limit, to avoid collision.
-9. if there is no obstacle ahead then stay in lane follow and increase the speed according to maximum acceleration limit.
+9. if there is no obstacle ahead then stay in lane follow and increase the speed according to maximum acceleration limit. speed should not be more than speedlimit.
 
 ## Dependencies
 
